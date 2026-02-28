@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Angel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden;
+            background: #0a0a0a;
+            color: #f5f0e8;
+        }
+
+        /* Background Layers */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 3s ease-in-out;
+            z-index: -2;
+        }
+
+        .bg-layer.active {
+            opacity: 1;
+        }
+
+        .bg-1 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+
+        .bg-2 {
+            background-image: url('/mnt/kimi/upload/IMG-20240210-WA0055[1].jpg');
+            filter: brightness(0.7) contrast(1.1);
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Vignette Overlay */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Content Styling */
+        .content {
+            text-align: center;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .content.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.8s ease-out;
+        }
+
+        h1, h2, p {
+            font-weight: 300;
+            line-height: 1.8;
+            letter-spacing: 0.05em;
+        }
+
+        .main-text {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #f5f0e8;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+        }
+
+        .sub-text {
+            font-size: 1.3rem;
+            color: #d4af37;
+            font-style: italic;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .question-text {
+            font-size: 1.6rem;
+            margin-bottom: 2.5rem;
+            color: #f5f0e8;
+        }
+
+        .highlight {
+            color: #d4af37;
+            font-weight: 400;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 3rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            color: #d4af37;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Wrong Answer Screen */
+        .wrong-answer {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3rem;
+            border-radius: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .wrong-text {
+            font-size: 1.4rem;
+            color: #d4af37;
+            margin-bottom: 1rem;
+        }
+
+        .retry-text {
+            font-size: 1.1rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Final Message */
+        .final-message {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4rem;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .birthday-title {
+            font-size: 3rem;
+            color: #d4af37;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+        }
+
+        .poem-line {
+            font-size: 1.3rem;
+            margin: 1rem 0;
+            color: #f5f0e8;
+            opacity: 0.9;
+        }
+
+        .signature {
+            margin-top: 3rem;
+            font-size: 1.1rem;
+            color: #d4af37;
+            font-style: italic;
+        }
+
+        /* Music Control */
+        .music-control {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .music-control:hover {
+            opacity: 1;
+        }
+
+        .music-btn {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            color: #d4af37;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .music-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: rgba(212, 175, 55, 0.7);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .countdown.visible {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .main-text { font-size: 1.4rem; }
+            .question-text { font-size: 1.2rem; }
+            .birthday-title { font-size: 2rem; }
+            .button-group { flex-direction: column; gap: 1rem; }
+            .btn { padding: 0.8rem 2rem; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- Background Layers -->
+    <div class="bg-layer bg-1 active" id="bg1"></div>
+    <div class="bg-layer bg-2" id="bg2"></div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Vignette -->
+    <div class="vignette"></div>
+
+    <!-- Countdown -->
+    <div class="countdown" id="countdown"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="content visible" id="content">
+            <!-- Content injected by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Music Control -->
+    <div class="music-control">
+        <button class="music-btn" id="musicToggle" onclick="toggleMusic()">🎵</button>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="bgMusic" loop>
+        <!-- Note: User needs to add their own audio file -->
+        <source src="2018.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // State Management
+        let currentState = 'opening';
+        let musicPlaying = false;
+        const audio = document.getElementById('bgMusic');
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Content Templates
+        const screens = {
+            opening: {
+                html: `
+                    <p class="main-text">Before we begin...<br>I need to ask you something.</p>
+                    <p class="question-text">Are you <span class="highlight">Angel Maesela</span>...<br>also known as <span class="highlight">Suki</span>?</p>
+                    <div class="button-group">
+                        <button class="btn" onclick="handleAnswer(true, 'name')">Yes</button>
+                        <button class="btn" onclick="handleAnswer(false, 'name')">No</button>
+                    </div>
+                `
+            },
+            wrongName: {
+                html: `
+                    <div class="wrong-answer">
+                        <p class="wrong-text">Wrong answer.<br>You're too special to pretend otherwise.</p>
+                        <p class="retry-text">Let's try that again...</p>
+                    </div>
+                `,
+                delay: 2000,
+                next: 'opening'
+            },
+            transition: {
+                html: `
+                    <p class="main-text">The person who sent this<br>knows just how special you are.</p>
+                    <p class="sub-text">One more thing...</p>
+                    <p class="question-text">Is <span class="highlight">'Moja Mosoko'</span> your first love?</p>
+                    <div class="button-group">
+                        <button class="btn" onclick="handleAnswer(true, 'love')">Yes</button>
+                        <button class="btn" onclick="handleAnswer(false, 'love')">No</button>
+                    </div>
+                `
+            },
+            wrongLove: {
+                html: `
+                    <div class="wrong-answer">
+                        <p class="wrong-text">Hmm...<br>I think your heart remembers differently.</p>
+                        <p class="retry-text">Let's answer that again...</p>
+                    </div>
+                `,
+                delay: 2000,
+                next: 'transition'
+            },
+            final: {
+                html: `
+                    <div class="final-message">
+                        <p class="birthday-title">Happy Birthday, Angel.</p>
+                        <p class="poem-line">Time moves... but some chapters stay written in ink.</p>
+                        <p class="poem-line">Some things change.<br>Some memories don't.</p>
+                        <p class="poem-line" style="margin-top: 2rem; color: #d4af37;">See you on your 21st birthday.</p>
+                        <p class="signature">Love,<br>@RM.</p>
+                    </div>
+                `,
+                final: true
+            }
+        };
+
+        // Transition between screens
+        function transitionTo(screenName) {
+            const content = document.getElementById('content');
+            const screen = screens[screenName];
+
+            content.classList.add('fade-out');
+
+            setTimeout(() => {
+                content.innerHTML = screen.html;
+                content.classList.remove('fade-out');
+                content.classList.add('visible');
+
+                // Handle auto-transition for wrong answers
+                if (screen.delay && screen.next) {
+                    setTimeout(() => {
+                        transitionTo(screen.next);
+                    }, screen.delay);
+                }
+
+                // Show countdown on final screen
+                if (screen.final) {
+                    document.getElementById('countdown').classList.add('visible');
+                    startCountdown();
+                }
+            }, 800);
+        }
+
+        // Handle button answers
+        function handleAnswer(isYes, type) {
+            if (type === 'name') {
+                if (isYes) {
+                    // Transition background
+                    document.getElementById('bg1').classList.remove('active');
+                    document.getElementById('bg2').classList.add('active');
+
+                    // Increase music volume slightly
+                    if (musicPlaying) {
+                        audio.volume = 0.5;
+                    }
+
+                    transitionTo('transition');
+                } else {
+                    transitionTo('wrongName');
+                }
+            } else if (type === 'love') {
+                if (isYes) {
+                    // Final transition - photo background
+                    document.getElementById('bg1').style.opacity = '0';
+                    document.getElementById('bg2').style.opacity = '1';
+
+                    // Boost music volume
+                    if (musicPlaying) {
+                        audio.volume = 0.6;
+                    }
+
+                    transitionTo('final');
+                } else {
+                    transitionTo('wrongLove');
+                }
+            }
+        }
+
+        // Music Control
+        function toggleMusic() {
+            const btn = document.getElementById('musicToggle');
+
+            if (musicPlaying) {
+                audio.pause();
+                btn.textContent = '🔇';
+                musicPlaying = false;
+            } else {
+                audio.volume = 0.3;
+                audio.play().catch(e => {
+                    console.log('Audio play failed:', e);
+                    alert('Please click to enable audio');
+                });
+                btn.textContent = '🎵';
+                musicPlaying = true;
+            }
+        }
+
+        // Countdown to next birthday
+        function startCountdown() {
+            const countdownEl = document.getElementById('countdown');
+
+            function updateCountdown() {
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                let nextBirthday = new Date(currentYear, 1, 28); // February 28
+
+                if (now > nextBirthday) {
+                    nextBirthday = new Date(currentYear + 1, 1, 28);
+                }
+
+                const diff = nextBirthday - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                countdownEl.textContent = `Until 21: ${days}d ${hours}h`;
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // Update every minute
+        }
+
+        // Initialize
+        window.onload = () => {
+            createParticles();
+            document.getElementById('content').innerHTML = screens.opening.html;
+
+            // Try to autoplay music (may be blocked by browser)
+            setTimeout(() => {
+                audio.volume = 0.3;
+                audio.play().then(() => {
+                    musicPlaying = true;
+                }).catch(() => {
+                    // Autoplay blocked, user needs to click
+                    document.getElementById('musicToggle').textContent = '🔇';
+                });
+            }, 1000);
+        };
+
+        // Stop music after 1:40 (100 seconds)
+        setInterval(() => {
+            if (musicPlaying && audio.currentTime >= 100) {
+                // Fade out
+                const fadeInterval = setInterval(() => {
+                    if (audio.volume > 0.05) {
+                        audio.volume -= 0.05;
+                    } else {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        musicPlaying = false;
+                        document.getElementById('musicToggle').textContent = '🔇';
+                        clearInterval(fadeInterval);
+                    }
+                }, 200);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
